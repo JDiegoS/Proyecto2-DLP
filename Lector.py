@@ -84,7 +84,6 @@ class Lector(object):
                             value.append(chr(int(number)))
                         else:
                             # Caracter ya definido
-                            print(text[pos])
                             found =False
                             for i in self.characters:
                                 if i.id == text[pos]:
@@ -94,6 +93,7 @@ class Lector(object):
                                     break
                             if found == False:
                                 print('Error: el caracter %s no esta definido' % text[pos])
+                                quit()
                         pos += 1
                 if self.finishedLine:
                     self.characters.append(Characters(id, value))

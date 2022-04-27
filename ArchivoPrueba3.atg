@@ -7,7 +7,7 @@ digito = "01234567890".
 digitoHex = digito + "ABCDEF".
 enBlanco = CHR(9) + CHR(32).
 comillas = CHR(34).
-cualquiera = letra + digito + enBlanco.
+cualquiera = letras + digito + enBlanco.
 
 
 KEYWORDS
