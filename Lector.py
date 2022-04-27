@@ -58,6 +58,8 @@ class Lector(object):
                 print('Error al final de linea. Debe terminar en =, + o .')
                 quit()
             # Separar linea
+            if self.finishedLine == False:
+                letters = 'a=' + letters
             words = letters.split('=')
             
             # Analizar characters
@@ -66,36 +68,38 @@ class Lector(object):
                 value = []
                 text = words[1].split('+')
                 if letters[-1] == '.':
-                    self.finishedLine = True
                     text[-1] = text[-1][:-1]
-                pos = 0
-                while pos < len(text):
-                    if text[pos][0] == '"':
-                        # String de caracteres
-                        alph = list(text[pos].replace('"',''))
-                        for i in alph:
-                            value.append(i)
-                    elif text[pos][0:4] == 'CHR(':
-                        # ASCII
-                        number = text[pos][4:][:-1]
-                        value.append(chr(int(number)))
-                    else:
-                        # Caracter ya definido
-                        print(text[pos])
-                        found =False
-                        for i in self.characters:
-                            if i.id == text[pos]:
-                                for j in i.alphabet:
-                                    value.append(j)
-                                    found = True
-                                break
-                        if found == False:
-                            print('Error: el caracter %s no esta definido' % text[pos])
-                    pos += 1
+                
+                if letters[-1] == '.' or letters[-1] == '+':
+                    pos = 0
+                    while pos < len(text):
+                        if text[pos][0] == '"':
+                            # String de caracteres
+                            alph = list(text[pos].replace('"',''))
+                            for i in alph:
+                                value.append(i)
+                        elif text[pos][0:4] == 'CHR(':
+                            # ASCII
+                            number = text[pos][4:][:-1]
+                            value.append(chr(int(number)))
+                        else:
+                            # Caracter ya definido
+                            print(text[pos])
+                            found =False
+                            for i in self.characters:
+                                if i.id == text[pos]:
+                                    for j in i.alphabet:
+                                        value.append(j)
+                                        found = True
+                                    break
+                            if found == False:
+                                print('Error: el caracter %s no esta definido' % text[pos])
+                        pos += 1
                 if self.finishedLine:
                     self.characters.append(Characters(id, value))
                 else:
-                    self.characters[-1].value.append(value)
+                    self.characters[-1].alphabet.append(value)
+                    self.finishedLine = True
 
             # Analizar Keywords
             elif self.currentType == 'KEYWORDS':
@@ -103,15 +107,17 @@ class Lector(object):
                 value = []
                 if letters[-1] == '.':
                     value = words[1][:-1].replace('"','')
-                    self.finishedLine = True
+ 
                 if self.finishedLine:
                     self.keywords.append(Keywords(id, value))
                 else:
-                    self.keywords[-1].value.append(value)
+                    self.keywords[-1].value = value
+                    self.finishedLine = True
 
             # Analizar tokens
             elif self.currentType == 'TOKENS':
                 id = words[0]
+                value = []
                 value = words[1]
                 pos = 2
                 hasExcept = False
@@ -123,11 +129,12 @@ class Lector(object):
                     pos+=1
                 if hasExcept == False and letters[-1] == '.':
                     value = value[:-1]
-                    self.finishedLine = True
+
                 if self.finishedLine:
                     self.tokens.append(Token(id, value))
                 else:
-                    self.tokens[-1].value.append(value)
+                    self.tokens[-1].value += value
+                    self.finishedLine = True
             
             if letters[-1] == '=' or letters[-1] == '+':
                 self.finishedLine = False

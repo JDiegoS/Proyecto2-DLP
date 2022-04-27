@@ -5,20 +5,23 @@ CHARACTERS
 letra = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ".
 digito = "01234567890".
 digitoHex = digito + "ABCDEF".
-tab = CHR(9).
+tab = 
+CHR(9).
 
 
 KEYWORDS
 
-si = "if".
+si="if".
 SI = IF.
-para = "for".
+para =
+ "for".
 
 TOKENS
 
 identificador = letra{letra|digito} EXCEPT KEYWORDS.
-numero = digito{digito}.
+numero=digito{digito}.
 numeroHex = digitoHex{digitoHex}"H".
-tabulador = tab.
+tabulador = 
+tab.
 
 END ArchivoPrueba2
