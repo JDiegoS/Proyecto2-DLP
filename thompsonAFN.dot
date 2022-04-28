@@ -1,38 +1,184 @@
 digraph {
 	fake0 [style=invisible]
-	15
-	7
-	5
-	4
-	10
-	1
-	2
+	26
+	42
+	70
+	68
+	36
+	75
 	6
-	8 [shape=doublecircle]
-	3
-	13
-	16 [shape=doublecircle]
+	39
+	53
+	40 [shape=doublecircle]
+	23
+	25
 	14
-	9
+	67
+	60
+	24
+	72
+	17
+	31
+	59
+	45
+	58
+	47
+	65
+	16
+	15
+	29
+	76
+	33
+	19
+	51
 	12
+	7
+	44
+	9
+	4
+	74
+	13
+	37
+	57
+	52
+	61 [shape=doublecircle]
+	69
+	50
+	54
+	20
+	56
+	63
+	35
+	30
+	77
+	10
+	38
+	73
+	5
+	48
 	11
+	62
+	71
+	78 [shape=doublecircle]
+	2
+	49
+	41
+	1
+	8
+	18
+	43
+	32
+	55
+	21
+	27
+	22
+	28
+	64
+	66
+	46
+	34
+	3
 	fake0 -> 0 [style=bold]
-	0 -> 9 [label=epsilon]
 	0 -> 1 [label=epsilon]
+	0 -> 62 [label=epsilon]
 	1 -> 2 [label=epsilon]
+	2 -> 23 [label=epsilon]
+	2 -> 21 [label=epsilon]
+	2 -> 11 [label=epsilon]
+	2 -> 25 [label=epsilon]
+	2 -> 19 [label=epsilon]
+	2 -> 15 [label=epsilon]
 	2 -> 3 [label=epsilon]
-	2 -> 5 [label=epsilon]
-	3 -> 4 [label=a]
-	5 -> 6 [label=b]
+	2 -> 17 [label=epsilon]
+	3 -> 4 [label=epsilon]
+	4 -> 5 [label=epsilon]
 	4 -> 7 [label=epsilon]
-	6 -> 7 [label=epsilon]
-	7 -> 8 [label=epsilon]
+	5 -> 6 [label=a]
+	7 -> 8 [label=b]
+	6 -> 9 [label=epsilon]
+	8 -> 9 [label=epsilon]
 	9 -> 10 [label=epsilon]
-	10 -> 13 [label=epsilon]
-	10 -> 11 [label=epsilon]
 	11 -> 12 [label=c]
-	13 -> 14 [label=d]
-	12 -> 15 [label=epsilon]
-	14 -> 15 [label=epsilon]
-	15 -> 16 [label=epsilon]
+	10 -> 13 [label=epsilon]
+	12 -> 13 [label=epsilon]
+	16 -> 13 [label=epsilon]
+	18 -> 13 [label=epsilon]
+	20 -> 13 [label=epsilon]
+	22 -> 13 [label=epsilon]
+	24 -> 13 [label=epsilon]
+	26 -> 61 [label=epsilon]
+	26 -> 13 [label=epsilon]
+	13 -> 14 [label=epsilon]
+	15 -> 16 [label=d]
+	17 -> 18 [label=e]
+	19 -> 20 [label=f]
+	21 -> 22 [label=g]
+	23 -> 24 [label=h]
+	25 -> 26 [label=i]
+	14 -> 27 [label=epsilon]
+	60 -> 27 [label=epsilon]
+	60 -> 39 [label=epsilon]
+	60 -> 61 [label=epsilon]
+	27 -> 28 [label=epsilon]
+	28 -> 37 [label=epsilon]
+	28 -> 49 [label=epsilon]
+	28 -> 47 [label=epsilon]
+	28 -> 41 [label=epsilon]
+	28 -> 51 [label=epsilon]
+	28 -> 45 [label=epsilon]
+	28 -> 29 [label=epsilon]
+	28 -> 53 [label=epsilon]
+	28 -> 43 [label=epsilon]
+	29 -> 30 [label=epsilon]
+	30 -> 33 [label=epsilon]
+	30 -> 31 [label=epsilon]
+	31 -> 32 [label=a]
+	33 -> 34 [label=b]
+	32 -> 35 [label=epsilon]
+	34 -> 35 [label=epsilon]
+	35 -> 36 [label=epsilon]
+	37 -> 38 [label=c]
+	36 -> 39 [label=epsilon]
+	38 -> 39 [label=epsilon]
+	42 -> 39 [label=epsilon]
+	44 -> 39 [label=epsilon]
+	46 -> 39 [label=epsilon]
+	48 -> 39 [label=epsilon]
+	50 -> 39 [label=epsilon]
+	52 -> 39 [label=epsilon]
+	39 -> 40 [label=epsilon]
+	41 -> 42 [label=d]
+	43 -> 44 [label=e]
+	45 -> 46 [label=f]
+	47 -> 48 [label=g]
+	49 -> 50 [label=h]
+	51 -> 52 [label=i]
+	53 -> 54 [label=epsilon]
+	54 -> 57 [label=epsilon]
+	54 -> 55 [label=epsilon]
+	55 -> 56 [label=0]
+	57 -> 58 [label=1]
+	56 -> 59 [label=epsilon]
+	58 -> 59 [label=epsilon]
+	59 -> 60 [label=epsilon]
+	62 -> 63 [label=epsilon]
+	63 -> 66 [label=epsilon]
+	63 -> 64 [label=epsilon]
+	64 -> 65 [label=0]
+	66 -> 67 [label=1]
+	65 -> 68 [label=epsilon]
+	67 -> 68 [label=epsilon]
+	68 -> 69 [label=epsilon]
+	69 -> 70 [label=epsilon]
+	69 -> 78 [label=epsilon]
+	77 -> 70 [label=epsilon]
+	77 -> 78 [label=epsilon]
+	70 -> 71 [label=epsilon]
+	71 -> 72 [label=epsilon]
+	71 -> 74 [label=epsilon]
+	72 -> 73 [label=0]
+	74 -> 75 [label=1]
+	73 -> 76 [label=epsilon]
+	75 -> 76 [label=epsilon]
+	76 -> 77 [label=epsilon]
 }

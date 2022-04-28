@@ -33,18 +33,24 @@ class AFN(object):
 
         self.nodes.append(Node(str(state+5), [[str(state+2), 'epsilon'], [state+4, 'epsilon']], False))
         self.lastOrUnion = state+5
+        self.lastState = self.lastOrUnion + 1
         self.nodes.append(Node(str(state+6), [[str(state+5), 'epsilon']], accepted))
 
     def concatOp(self, state, accepted, i):
         self.nodes.append(Node(str(state), [[str(self.lastState), i]], accepted))
         self.lastState = state
 
-    def kleeneOp(self, first):
+    def kleeneOp(self, first, orUnion = False):        
+        beforeFirst = -1
         for i in self.nodes:
             if i.state == str(first) or i.state == first:    
-                i.transitions.append([str(self.nodes[-2].state), 'epsilon'])
+                i.transitions.append([str(self.lastState), 'epsilon'])
+                beforeFirst = i.transitions[0][0]
 
-        self.nodes[-1].transitions.append([str(first-1), 'epsilon'])
+        if beforeFirst == -1:
+            self.nodes[-1].transitions.append([str(first-1), 'epsilon'])
+        else:
+            self.nodes[-1].transitions.append([str(beforeFirst), 'epsilon'])
 
     def newKleene(self, position, accepted, inOr=False):
         operacionP = []
@@ -56,7 +62,7 @@ class AFN(object):
         self.lastState = self.state
         self.state +=1
         
-        self.skip +=1
+        #self.skip +=1
         while searching and position <= len(self.arr):
             
             if self.arr[position] == '}':
@@ -104,14 +110,17 @@ class AFN(object):
             self.state += 1
             if self.arr[endPosition+2] == '(':
                 self.parenthesisOp(self.state, endPosition+3, False, True)
+                self.nodes.append(Node(str(self.state), [[str(orNode1), 'epsilon']], False))
             elif self.arr[endPosition+2] == '{':
                 self.newKleene(self.state, endPosition+3, False, True)
+                self.nodes.append(Node(str(self.state), [[str(orNode1), 'epsilon']], False))
             else:
                 if endPosition+3 == len(self.arr):
                     self.orAccepted = True
                 self.nodes.append(Node(str(self.state), [[str(self.state-1), self.arr[endPosition+2]]], False))
                 self.state += 1
-            self.nodes.append(Node(str(self.state), [[str(orNode1), 'epsilon'], [self.state-1, 'epsilon']], False))
+                self.nodes.append(Node(str(self.state), [[str(orNode1), 'epsilon'], [self.state-1, 'epsilon']], False))
+            
             self.lastOrUnion = self.state
             self.nodes.append(Node(str(self.state+1), [[str(self.state), 'epsilon']], self.orAccepted))
             self.state += 2
@@ -123,15 +132,20 @@ class AFN(object):
             tempAFN.changeState(self.state)
             tempAFN.changeLastState(self.state-1)
             pNodes = tempAFN.generateAFN()
-            pNodes[-1].accepted = False
+            for i in tempAFN.nodes:
+                if i.state == str(tempAFN.lastState) or i.state == tempAFN.lastState:    
+                    i.accepted = False
             self.state = tempAFN.state
-            self.skip += len(operacionP)+1    
-            self.lastState = self.state - 1
+            self.lastOrUnion = tempAFN.lastOrUnion
+            self.lastOrOrigin = tempAFN.lastOrOrigin
+            self.skip += len(operacionP)+1
+            self.lastState = tempAFN.lastState
                     
             for j in pNodes:
                 self.nodes.append(j)
 
             self.nodes.append(Node(str(self.state), [[str(self.lastState), 'epsilon']], accepted))
+
             self.kleeneOp(start)
             self.lastState = self.state
             self.state += 1
@@ -146,20 +160,30 @@ class AFN(object):
         searching = True
         fOr = False
         endPosition = 0
+        pCount = 0
+        for i in self.arr[position:]:
+            if i == '(':
+                pCount +=1
+            elif i == ')':
+                break
         while searching and position <= len(self.arr):
             if self.arr[position] == ')':
-                endPosition = position
-                if position+1 == len(self.arr):
-                    if inOr == False:
-                        accepted = True
-                    else:
-                        self.orAccepted = True
-                elif self.arr[position+1] == '|':
-                    if position+3 == len(self.arr):
-                        accepted = True
-                    fOr = True
-                    self.skip +=1
-                searching = False
+                if pCount == 0:
+                    endPosition = position
+                    if position+1 == len(self.arr):
+                        if inOr == False:
+                            accepted = True
+                        else:
+                            self.orAccepted = True
+                    elif self.arr[position+1] == '|':
+                        if position+3 == len(self.arr):
+                            accepted = True
+                        fOr = True
+                        self.skip +=1
+                    searching = False
+                else:
+                    operacionP.append(self.arr[position])
+                pCount -= 1
 
             else:
                 operacionP.append(self.arr[position])
@@ -195,9 +219,13 @@ class AFN(object):
                     self.orAccepted = True
                 self.nodes.append(Node(str(self.state), [[str(self.state-1), self.arr[endPosition+2]]], False))
                 self.state += 1
+
+                self.nodes.append(Node(str(self.state), [[str(orNode1), 'epsilon'], [self.state-1, 'epsilon']], False))
             else:
                 self.parenthesisOp(self.state, endPosition+3, False, True)
-            self.nodes.append(Node(str(self.state), [[str(orNode1), 'epsilon'], [self.state-1, 'epsilon']], False))
+                self.nodes.append(Node(str(self.state), [[str(orNode1), 'epsilon']], False))
+            #self.nodes.append(Node(str(self.state), [[str(orNode1), 'epsilon'], [self.state-1, 'epsilon']], False))
+            #self.nodes.append(Node(str(self.state), [[str(orNode1), 'epsilon']], False))
             self.lastOrUnion = self.state
             self.nodes.append(Node(str(self.state+1), [[str(self.state), 'epsilon']], self.orAccepted))
             self.state += 2
@@ -209,10 +237,13 @@ class AFN(object):
             tempAFN.changeState(self.state)
             tempAFN.changeLastState(self.state-1)
             pNodes = tempAFN.generateAFN()
-            pNodes[-1].accepted = accepted
+            pNodes[-1].accepted = accepted or self.orAccepted
             self.state = tempAFN.state
+            self.lastOrUnion = tempAFN.lastOrUnion
+            self.lastOrOrigin = tempAFN.lastOrOrigin
             self.skip += len(operacionP)+1    
             self.lastState = self.state - 1
+
                     
             for j in pNodes:
                 self.nodes.append(j)
@@ -260,7 +291,7 @@ class AFN(object):
                 self.state += 1
                 if (self.arr[position] in self.alphabet):
                     self.nodes.append(Node(str(self.state), [[str(self.state-1), self.arr[position]]], False))
-                    if position+1 == len(self.arr):
+                    if position+2 == len(self.arr):
                         accepted = True
                     for j in self.nodes:
                         if str(j.state) == str(self.lastOrUnion):

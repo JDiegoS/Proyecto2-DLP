@@ -9,7 +9,7 @@ from AFN import AFN
 from Subconjuntos import Subconjuntos
 
 from Node import Node
-class AFN(object):
+class Generador(object):
     # Clase para construir AFN
 
     def __init__(self, tokens, keywords, characters):
@@ -17,35 +17,22 @@ class AFN(object):
         self.keywords = keywords
         self.characters = characters
         self.operaciones = ['(', ')', '|', '{', '}']
+        self.expressions = []
 
         os.environ["PATH"] += os.pathsep + 'C:/Program Files/graphviz/bin'
 
-        expresion = input("\nIngrese la expresion regular: ")
-        expresion2 = input("\nIngrese la expresion regular: ")
-        print("Analizando expresion...")
+        print("Analizando la gramatica...")
+        self.analizeGrammar()
 
-        arr = list(expresion)
-        if arr.count('(') != arr.count(')') or arr.count('{') != arr.count('}'):
-            print('Esa expresion no es valida')
-            quit()
-        alphabet = []
-        for i in arr:
-            if i not in self.operaciones and i not in alphabet:
-                alphabet.append(i)
-
-        arr2 = list(expresion2)
-        if arr2.count('(') != arr2.count(')') or arr2.count('{') != arr2.count('}'):
-            print('Esa expresion no es valida')
-            quit()
-        alphabet2 = []
-        for i in arr2:
-            if i not in self.operaciones and i not in alphabet2:
-                alphabet2.append(i)
+        # Verificar que se cierren los parentesis y kleene
+        for i in self.expressions:
+            arr = list(i)
+            if arr.count('(') != arr.count(')') or arr.count('{') != arr.count('}'):
+                print('Esa expresion no es valida')
+                quit()
 
         # Construir AFN
-        print("Generando AFN (Thompson)...")
-
-        alphabetfinal = alphabet + alphabet2
+        alphabetfinal = []
         graph = {
             "alphabet": alphabetfinal,
             "states": [],
@@ -53,17 +40,71 @@ class AFN(object):
             "accepting_states": [],
             "transitions": [],
         }
-
-        self.generateAFN(arr, alphabet, graph)
-        self.generateAFN(arr2, alphabet2, graph)
+        
+        for i in self.expressions:
+            currentAlphabet = []
+            for j in i:
+                if j not in self.operaciones:
+                    currentAlphabet.append(j)
+                    if j not in alphabetfinal:
+                        alphabetfinal.append(j)
+            self.generateAFN(list(i), currentAlphabet, graph)
+        print(alphabetfinal)
+        
+        
+        print("Generando AFN (Thompson)...")
         self.graphAFN(graph)
-        self.generateAFD(alphabetfinal, graph)
+        afd = self.generateAFD(graph, alphabetfinal)
+
+        self.simulateA(afd)
+
+
+    def analizeGrammar(self):
+        # En cada token, convertir ids de caracteres a sus alfabetos
+        finalExpression = []
+        for i in self.tokens:
+            currentToken = i.value
+            currentToken = currentToken.replace('"', '')
+            nextIndex = 0
+            for j in self.characters:
+                nextIndex +=1
+                goNext = False
+                # Buscar si el id del caracter se encuentra en el token
+                character = currentToken.find(j.id)
+                if character != -1:
+                    for c in self.characters[nextIndex:]:
+                        # Verificar que se este usando el caracter correcto (problemas como digito y digitoHex)
+                        if currentToken.find(c.id) == character:
+                            goNext = True
+                    if goNext:
+                        goNext = False
+                        continue
+                    currentAlphabet = '('
+                    if len(j.alphabet) == 1:
+                        currentAlphabet = j.alphabet[0]
+                    else:
+                        currentAlphabet = (currentAlphabet * (len(j.alphabet)-1)) + j.alphabet[0]
+                        for a in j.alphabet[1:]:
+                            # Agregar OR para cada valor del alfabeto
+                            currentAlphabet += '|' + a + ')'
+                    # Reemplazar el id del caracter por su alfabeto
+                    currentToken = currentToken.replace(j.id, currentAlphabet)
+                
+            # Agregar expresion al arreglo final
+            finalExpression.append(currentToken)
+        self.expressions = finalExpression
+        print(self.expressions)
+            
 
     def generateAFN(self, arr, alphabet, graph):
+        # Crear AFN en base al alfabeto
         afn = AFN(arr, alphabet)
         afn_nodes = afn.generateAFN()
 
-        nextIndex = int(graph['states'][-1]) + 1
+        if graph['states'] == []:
+            nextIndex = 1
+        else:
+            nextIndex = int(graph['states'][-1]) + 1
         graph['transitions'].append(['0', 'epsilon', str(int(afn_nodes[0].state) + nextIndex)])
         for i in afn_nodes:
             if str(int(i.state) + nextIndex) not in graph['states']:
@@ -75,12 +116,14 @@ class AFN(object):
 
     
     def graphAFN(self, graph):
+        # Crear grafica del AFN
         with open('digraph.json', 'w') as outfile:
             json.dump(graph, outfile)
         dfa_example = automata_IO.nfa_json_importer('./digraph.json')
         automata_IO.nfa_to_dot(dfa_example, 'thompsonAFN', './')
 
     def generateAFD(self, graph, alphabet):
+        # Crear y graficar AFD
         print("Generando AFD (Construccion de subconjuntos)...")
         afd_sub = Subconjuntos(graph['states'], graph['transitions'], alphabet, graph['accepting_states'])
         afd_snodes = afd_sub.generateAFD()
@@ -103,10 +146,12 @@ class AFN(object):
             json.dump(graph2, outfile)
         dfa_example = automata_IO.dfa_json_importer('./digraph2.json')
         automata_IO.dfa_to_dot(dfa_example, 'subconjuntosAFD', './')
+        return graph2
 
     def simulateA(self, graph):
-        opc = input('\nIngrese una cadena para evaluar (0 para salir): ')
-        while opc != '0':
+        # Simular AFD
+        opc = input('\nIngrese una cadena para evaluar (q para salir): ')
+        while opc != 'q':
             
             cadena = list(opc)
             if len(cadena) == 0:

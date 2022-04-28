@@ -8,6 +8,7 @@ from Node import Node
 from AFN import AFN
 from Subconjuntos import Subconjuntos
 from Lector import Lector
+from Generador import Generador
 
 print('\nProyecto 2: Diseno de Lenguajes de Programacion')
 success = False
@@ -26,15 +27,12 @@ while success == False:
     keywords = lector.getKeywords()
     characters = lector.getCharacters()
 
-    for i in tokens:
-        print(i.id)
-        print(i.value)
-    
-    for i in keywords:
-        print(i.id)
-        print(i.value)
-    
+    '''
     for i in characters:
-        print(i.id)
-        print(i.alphabet)
-
+        for j in characters:
+            if i.id != j.id:
+                if j.id.find(i.id) != -1:
+                    i.id = i.id + ' '
+    '''
+    generador = Generador(tokens, keywords, characters)
+    generador.analizeGrammar()

@@ -130,6 +130,8 @@ class Lector(object):
                 if hasExcept == False and letters[-1] == '.':
                     value = value[:-1]
 
+                if value.find('EXCEPT') != -1:
+                    value = value[0:value.find('EXCEPT')]
                 if self.finishedLine:
                     self.tokens.append(Token(id, value))
                 else:
