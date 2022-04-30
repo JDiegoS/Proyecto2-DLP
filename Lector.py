@@ -69,6 +69,8 @@ class Lector(object):
                 text = words[1].split('+')
                 if letters[-1] == '.':
                     text[-1] = text[-1][:-1]
+                text = [x for x in text if x]
+
                 
                 if letters[-1] == '.' or letters[-1] == '+':
                     pos = 0
@@ -98,7 +100,8 @@ class Lector(object):
                 if self.finishedLine:
                     self.characters.append(Characters(id, value))
                 else:
-                    self.characters[-1].alphabet.append(value)
+                    for i in value:
+                        self.characters[-1].alphabet.append(i)
                     self.finishedLine = True
 
             # Analizar Keywords

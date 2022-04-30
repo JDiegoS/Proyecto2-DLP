@@ -145,7 +145,6 @@ class AFN(object):
                 self.nodes.append(j)
 
             self.nodes.append(Node(str(self.state), [[str(self.lastState), 'epsilon']], accepted))
-
             self.kleeneOp(start)
             self.lastState = self.state
             self.state += 1
@@ -237,17 +236,19 @@ class AFN(object):
             tempAFN.changeState(self.state)
             tempAFN.changeLastState(self.state-1)
             pNodes = tempAFN.generateAFN()
-            pNodes[-1].accepted = accepted or self.orAccepted
+            pNodes[-1].accepted = False
             self.state = tempAFN.state
             self.lastOrUnion = tempAFN.lastOrUnion
             self.lastOrOrigin = tempAFN.lastOrOrigin
             self.skip += len(operacionP)+1    
-            self.lastState = self.state - 1
-
+            self.lastState = tempAFN.lastState
                     
             for j in pNodes:
                 self.nodes.append(j)
 
+            self.nodes.append(Node(str(self.state), [[str(self.lastState), 'epsilon']], accepted or self.orAccepted))
+            self.lastState = self.state
+            self.state += 1
 
     def generateAFN(self):
         # Crear nodos
@@ -300,18 +301,30 @@ class AFN(object):
                             j.accepted = True
                     self.skip += 1
                     self.state += 1
+                    self.lastState = self.lastOrUnion + 1
 
                 elif self.arr[position] == '(':
-                    self.parenthesisOp(self.state, position+1, accepted, True)
+                    currentLastUnion = self.lastOrUnion
+                    self.parenthesisOp(self.state, position+1, False, True)
+                    node1a = False
+                    node2a = False
                     for j in self.nodes:
-                        if str(j.state) == str(self.lastOrUnion):
-                            j.transitions.append([self.state-1 , 'epsilon'])
-                        if self.orAccepted and str(j.state) == str(self.lastOrUnion+1):
-                            j.accepted = True
-                            self.orAccepted = False
-                
-                
-                self.lastState = self.lastOrUnion + 1
+                        for j in self.nodes:
+                            if str(j.state) == str(currentLastUnion+1):
+                                #print(self.state)
+                                #j.transitions.append([self.state-1 , 'epsilon'])
+                                node2a = j.accepted
+                            if str(j.state) == str(self.lastState):
+                                node2a = j.accepted
+                            if self.orAccepted and str(j.state) == str(currentLastUnion+1):
+                                j.accepted = True
+                                self.orAccepted = False
+                    
+                    self.nodes.append(Node(str(self.state), [[self.lastState, 'epsilon'], [currentLastUnion+1, 'epsilon']], node1a or node2a))
+                    self.lastState = self.state
+                    self.state +=1
+
+                    #self.lastState = currentLastUnion + 1
 
             #Kleene
             elif i == '{':

@@ -61,6 +61,7 @@ class Subconjuntos(object):
         currentC = '0'
         cIndex = 1
         while building:
+            #print('hola3')
             conj = self.cerraduraEpsilon(currentC)
             searching = True
             while searching:

@@ -40,7 +40,7 @@ class Generador(object):
             "accepting_states": [],
             "transitions": [],
         }
-        
+        print(self.expressions)
         for i in self.expressions:
             currentAlphabet = []
             for j in i:
@@ -49,9 +49,7 @@ class Generador(object):
                     if j not in alphabetfinal:
                         alphabetfinal.append(j)
             self.generateAFN(list(i), currentAlphabet, graph)
-        print(alphabetfinal)
-        
-        
+
         print("Generando AFN (Thompson)...")
         self.graphAFN(graph)
         afd = self.generateAFD(graph, alphabetfinal)
@@ -126,6 +124,7 @@ class Generador(object):
         # Crear y graficar AFD
         print("Generando AFD (Construccion de subconjuntos)...")
         afd_sub = Subconjuntos(graph['states'], graph['transitions'], alphabet, graph['accepting_states'])
+        print('pol')
         afd_snodes = afd_sub.generateAFD()
         graph2 = {
             "alphabet": alphabet,
@@ -134,6 +133,8 @@ class Generador(object):
             "accepting_states": [],
             "transitions": [],
         }
+        print('pol2')
+
         for i in afd_snodes:
             if i.state not in graph2['states']:
                 graph2['states'].append(str(i.state))
@@ -142,10 +143,13 @@ class Generador(object):
                 for t in i.transitions:
                     graph2['transitions'].append([str(t[0]), t[1], str(i.state)])
 
+        # Graficar tarda mucho
+        '''
         with open('digraph2.json', 'w') as outfile:
             json.dump(graph2, outfile)
         dfa_example = automata_IO.dfa_json_importer('./digraph2.json')
         automata_IO.dfa_to_dot(dfa_example, 'subconjuntosAFD', './')
+        '''
         return graph2
 
     def simulateA(self, graph):
