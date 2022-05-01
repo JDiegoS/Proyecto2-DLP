@@ -2,7 +2,7 @@ from AFN import AFN
 from Node import Node
 
 class Subconjuntos(object):
-    def __init__(self, states, transitions, alphabet, accepted):
+    def __init__(self, states, transitions, alphabet, accepted, tokens):
         self.states = states
         self.transitions = transitions
         self.alphabet = alphabet
@@ -11,8 +11,13 @@ class Subconjuntos(object):
         self.accepted = accepted
         self.newAccepted = []
         self.nodes = []
+        self.tokens = tokens
+        self.tokensAccepted = []
         for i in alphabet:
             self.table.append([i])
+
+    def getTokensAccepted(self):
+        return self.tokensAccepted
 
     def cerraduraEpsilon(self, states):
         # Buscar a que estados se puede llegar con epsilon
@@ -61,7 +66,6 @@ class Subconjuntos(object):
         currentC = '0'
         cIndex = 1
         while building:
-            #print('hola3')
             conj = self.cerraduraEpsilon(currentC)
             searching = True
             while searching:
@@ -100,8 +104,12 @@ class Subconjuntos(object):
                         # Si no esta en la tabla, agregar estado
                         self.addState(conj2)
                         self.table[nChar].append('s'+str(self.state))
+                        # Agregar estado aceptado junto con su token
                         for i in self.accepted:
                             if i in conj2:
+                                for j in self.tokens:
+                                    if j[0] == i:
+                                        self.tokensAccepted.append(['s'+str(self.state), j[1]])
                                 self.newAccepted.append('s'+str(self.state))
                         self.state += 1
                     else:

@@ -18,6 +18,8 @@ class Generador(object):
         self.characters = characters
         self.operaciones = ['(', ')', '|', '{', '}']
         self.expressions = []
+        self.tokensAccepted = []
+        self.tokenStates = []
 
         os.environ["PATH"] += os.pathsep + 'C:/Program Files/graphviz/bin'
 
@@ -40,7 +42,8 @@ class Generador(object):
             "accepting_states": [],
             "transitions": [],
         }
-        print(self.expressions)
+
+        index = 0
         for i in self.expressions:
             currentAlphabet = []
             for j in i:
@@ -48,7 +51,8 @@ class Generador(object):
                     currentAlphabet.append(j)
                     if j not in alphabetfinal:
                         alphabetfinal.append(j)
-            self.generateAFN(list(i), currentAlphabet, graph)
+            self.generateAFN(list(i), currentAlphabet, graph, self.tokens[index].id)
+            index += 1
 
         print("Generando AFN (Thompson)...")
         self.graphAFN(graph)
@@ -91,14 +95,14 @@ class Generador(object):
             # Agregar expresion al arreglo final
             finalExpression.append(currentToken)
         self.expressions = finalExpression
-        print(self.expressions)
             
 
-    def generateAFN(self, arr, alphabet, graph):
+    def generateAFN(self, arr, alphabet, graph, tokens):
         # Crear AFN en base al alfabeto
         afn = AFN(arr, alphabet)
         afn_nodes = afn.generateAFN()
 
+        newAccepted = []
         if graph['states'] == []:
             nextIndex = 1
         else:
@@ -108,9 +112,13 @@ class Generador(object):
             if str(int(i.state) + nextIndex) not in graph['states']:
                 graph['states'].append(str(int(i.state) + nextIndex))
                 if i.accepted == True:
+                    newAccepted.append(str(int(i.state) + nextIndex))
                     graph['accepting_states'].append(str(int(i.state) + nextIndex))
                 for t in i.transitions:
                     graph['transitions'].append([str(int(t[0]) + nextIndex), t[1], str(int(i.state) + nextIndex)])
+
+        for i in newAccepted:
+            self.tokensAccepted.append([i, tokens])
 
     
     def graphAFN(self, graph):
@@ -123,8 +131,7 @@ class Generador(object):
     def generateAFD(self, graph, alphabet):
         # Crear y graficar AFD
         print("Generando AFD (Construccion de subconjuntos)...")
-        afd_sub = Subconjuntos(graph['states'], graph['transitions'], alphabet, graph['accepting_states'])
-        print('pol')
+        afd_sub = Subconjuntos(graph['states'], graph['transitions'], alphabet, graph['accepting_states'], self.tokensAccepted)
         afd_snodes = afd_sub.generateAFD()
         graph2 = {
             "alphabet": alphabet,
@@ -133,7 +140,6 @@ class Generador(object):
             "accepting_states": [],
             "transitions": [],
         }
-        print('pol2')
 
         for i in afd_snodes:
             if i.state not in graph2['states']:
@@ -143,6 +149,7 @@ class Generador(object):
                 for t in i.transitions:
                     graph2['transitions'].append([str(t[0]), t[1], str(i.state)])
 
+        self.tokenStates = afd_sub.getTokensAccepted()
         # Graficar tarda mucho
         '''
         with open('digraph2.json', 'w') as outfile:
@@ -156,37 +163,48 @@ class Generador(object):
         # Simular AFD
         opc = input('\nIngrese una cadena para evaluar (q para salir): ')
         while opc != 'q':
-            
-            cadena = list(opc)
-            if len(cadena) == 0:
-                if 's0' in graph['accepting_states']:
-                    print('SI CON SUBCONJUNTOS')
+            found = False
+            for i in self.keywords:
+                if opc == i.value:
+                    print(i.id)
+                    found = True
+                    break
+
+            if found != True:
+                cadena = list(opc)
+                if len(cadena) == 0:
+                    if 's0' in graph['accepting_states']:
+                        print('SI CON SUBCONJUNTOS')
+                    else:
+                        print("NO CON SUBCONJUNTOS")
                 else:
-                    print("NO CON SUBCONJUNTOS")
-            else:
-                s = 's0'
-                c = cadena[0]
-                i = 0
-                cadena.append('eof')
-                while (c != 'eof'):
-                    cambio = False
-                    # Mover(s,c)
-                    for j in graph['transitions']:
-                        if j[0] == s and j[1] == c:
-                            s = j[2]
-                            cambio = True
-                            print(s)
+                    s = 's0'
+                    c = cadena[0]
+                    i = 0
+                    cadena.append('eof')
+                    while (c != 'eof'):
+                        cambio = False
+                        # Mover(s,c)
+                        for j in graph['transitions']:
+                            if j[0] == s and j[1] == c:
+                                s = j[2]
+                                cambio = True
+                                print(s)
+                                break
+                        if cambio == False:
                             break
-                    if cambio == False:
-                        break
-                    # Siguiente caracter
-                    i+=1
-                    c = cadena[i]
-                if (s in graph['accepting_states'] and cambio):
-                    print('SI CON SUBCONJUNTOS')
-                else:
-                    print("NO CON SUBCONJUNTOS")
+                        # Siguiente caracter
+                        i+=1
+                        c = cadena[i]
+                    if (s in graph['accepting_states'] and cambio):
+                        #print('SI CON SUBCONJUNTOS')
+                        for i in self.tokenStates:
+                            if i[0] == s:
+                                print(i[1])
+                                break
+                    else:
+                        print("NO ES ACEPTADO POR LA GRAMATICA")
             
-            opc = input('\nIngrese una cadena para evaluar (0 para salir): ')
+            opc = input('\nIngrese una cadena para evaluar (q para salir): ')
             
 
