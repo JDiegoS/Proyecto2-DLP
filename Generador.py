@@ -58,7 +58,8 @@ class Generador(object):
         self.graphAFN(graph)
         afd = self.generateAFD(graph, alphabetfinal)
 
-        self.simulateA(afd)
+        #self.simulateA(afd)
+        self.simulateFile(afd)
 
 
     def analizeGrammar(self):
@@ -67,6 +68,7 @@ class Generador(object):
         for i in self.tokens:
             currentToken = i.value
             currentToken = currentToken.replace('"', '')
+            #currentToken = currentToken.replace(' ', '')
             nextIndex = 0
             for j in self.characters:
                 nextIndex +=1
@@ -95,6 +97,7 @@ class Generador(object):
             # Agregar expresion al arreglo final
             finalExpression.append(currentToken)
         self.expressions = finalExpression
+        print(self.expressions)
             
 
     def generateAFN(self, arr, alphabet, graph, tokens):
@@ -158,6 +161,97 @@ class Generador(object):
         automata_IO.dfa_to_dot(dfa_example, 'subconjuntosAFD', './')
         '''
         return graph2
+
+    def simulateFile(self, graph):
+        success = False
+        while success == False:
+            filename = input('\nIngrese el nombre del archivo: ')
+            try:
+                archivoTexto = open(filename)
+            except IOError:
+                print('Error al abrir archivo')
+                continue
+            success = True
+        fileLines = archivoTexto.readlines()
+        tokens = []
+        for i in fileLines:
+            i = i.replace('\n', '')
+            cadena = list(i)
+            cadena.append('e')
+            done = False
+            index = 0
+            while done == False:
+                i = index
+                passedAccepted = []
+                
+                currentChain = ''
+                lastAccepted = 0
+                lastToken = ''
+                empty = False
+                while (i != len(cadena)-1):
+                    currentChain += cadena[i]
+                    currentToken = self.simulateWord(graph, currentChain)
+                    passedAccepted.append([currentToken, currentChain])
+                    if(currentToken != "NO ES ACEPTADO POR LA GRAMATICA"):
+                        lastAccepted = i
+                        lastToken = currentToken
+                    elif i == index:
+                        empty = True
+                        break
+                    i+=1
+                if empty == False:
+                    index = lastAccepted + 1
+                    tokens.append(lastToken)
+                    
+                else:
+                    index += 1
+                if index == len(cadena)-1:
+                    break
+                
+
+        print('resssss')
+        print(tokens)
+
+    
+    def simulateWord(self, graph, opc):
+        found = False
+        for i in self.keywords:
+            if opc == i.value:
+                return i.id
+
+        if found != True:
+            cadena = list(opc)
+            if len(cadena) == 0:
+                if 's0' in graph['accepting_states']:
+                    for i in self.tokenStates:
+                        if i[0] == 's0':
+                            return i[1]
+                else:
+                    return "NO ES ACEPTADO POR LA GRAMATICA"
+            else:
+                s = 's0'
+                c = cadena[0]
+                i = 0
+                cadena.append('eof')
+                while (c != 'eof'):
+                    cambio = False
+                    # Mover(s,c)
+                    for j in graph['transitions']:
+                        if j[0] == s and j[1] == c:
+                            s = j[2]
+                            cambio = True
+                            break
+                    if cambio == False:
+                        break
+                    # Siguiente caracter
+                    i+=1
+                    c = cadena[i]
+                if (s in graph['accepting_states'] and cambio):
+                    for i in self.tokenStates:
+                        if i[0] == s:
+                            return i[1]
+                else:
+                    return "NO ES ACEPTADO POR LA GRAMATICA"       
 
     def simulateA(self, graph):
         # Simular AFD
