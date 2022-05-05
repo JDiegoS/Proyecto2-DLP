@@ -1,0 +1,25 @@
+COMPILER ArchivoPrueba4
+
+CHARACTERS 
+
+letra = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ".
+digito = "01234567890".
+enBlanco = CHR(9) + CHR(32).
+comillas = CHR(34).
+cualquiera = letra + digito + enBlanco.
+
+
+KEYWORDS
+
+si = "if".
+para = "for".
+mientras = "while".
+MIENTRAS = "WHILE".
+Mientras = "While".
+
+TOKENS
+
+
+cadena = comillas cualquiera comillas.
+
+END ArchivoPrueba3

@@ -97,7 +97,7 @@ class Generador(object):
             # Agregar expresion al arreglo final
             finalExpression.append(currentToken)
         self.expressions = finalExpression
-        print(self.expressions)
+        #print(self.expressions)
             
 
     def generateAFN(self, arr, alphabet, graph, tokens):
@@ -209,7 +209,7 @@ class Generador(object):
                     break
                 
 
-        print('resssss')
+        print('Resultado: ')
         print(tokens)
 
     
