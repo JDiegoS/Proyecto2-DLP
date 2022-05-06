@@ -58,7 +58,8 @@ class Generador(object):
         afd = self.generateAFD(graph, alphabetfinal)
 
         #self.simulateA(afd)
-        self.simulateFile(afd)
+        #self.simulateFile(afd)
+        self.generateFile(afd)
 
 
     def analizeGrammar(self):
@@ -159,110 +160,133 @@ class Generador(object):
         '''
         return graph2
 
-    def simulateFile(self, graph):
-        success = False
-        while success == False:
-            filename = input('\nIngrese el nombre del archivo: ')
-            if filename[-4:] != '.txt':
-                print('Formato invalido')
-                continue
-            try:
-                archivoTexto = open(filename)
-            except IOError:
-                print('Error al abrir archivo')
-                continue
-            success = True
-        fileLines = archivoTexto.readlines()
-        tokens = []
-        for i in fileLines:
-            i = i.replace('\n', '')
-            cadena = list(i)
-            cadena.append('e')
-            done = False
-            index = 0
-            while done == False:
-                i = index
-                passedAccepted = []
-                
-                currentChain = ''
-                lastAccepted = 0
-                lastToken = ''
-                empty = False
-                maybeKeyword = False
-                while (i != len(cadena)-1):
-                    currentChain += cadena[i]
-                    currentToken = self.simulateWord(graph, currentChain)
-                    passedAccepted.append([currentToken[0], currentChain])
-                    if(currentToken[0] != "NO ES ACEPTADO POR LA GRAMATICA"):
-                        lastAccepted = i
-                        lastToken = currentToken[0]
-                    elif currentToken[1] == 's0':
-                        
-                        for k in self.keywords:
-                            if k.value.find(currentChain) != -1:
-                                maybeKeyword = True
-                                break
-                        if maybeKeyword == False:
-                            empty = True
-                            break
-                    i+=1
-                    if i == len(cadena)-1 and lastToken == '':
-                        tokens.append('NO SE ENCONTRO')
-                        empty = True
-                if empty == False:
-                    index = lastAccepted + 1
-                    tokens.append(lastToken)
-                    
-                else:
-                    index += 1
-                if index == len(cadena)-1:
-                    break
-                
-
-        print('Resultado: ')
-        print(tokens)
-
-    
-    def simulateWord(self, graph, opc):
-        found = False
+    def generateFile(self, graph):
+        f = open("generado.py", "w")
+        f.write("graph = " + str(graph))
+        keys = []
         for i in self.keywords:
-            if opc == i.value:
-                return [i.id, 's1']
+            keys.append([i.id, i.value])
+        f.write("\nkeywords = " + str(keys))
+        f.write("\ntokenStates = " + str(self.tokenStates))
+        f.write('''
 
-        if found != True:
-            cadena = list(opc)
-            if len(cadena) == 0:
-                if 's0' in graph['accepting_states']:
-                    for i in self.tokenStates:
-                        if i[0] == 's0':
-                            return [i[1], 's1']
-                else:
-                    return ["NO ES ACEPTADO POR LA GRAMATICA", 's0']
-            else:
-                s = 's0'
-                c = cadena[0]
-                i = 0
-                cadena.append('eof')
-                while (c != 'eof'):
-                    cambio = False
-                    # Mover(s,c)
-                    for j in graph['transitions']:
-                        if j[0] == s and j[1] == c:
-                            s = j[2]
-                            cambio = True
+enter = chr(92) + chr(110)
+def simulateFile(graph, keywords, tokenStates):
+    #Simular archivo txt
+    success = False
+    while success == False:
+        print()
+        filename = input('Ingrese el nombre del archivo: ')
+        if filename[-4:] != '.txt':
+            print('Formato invalido')
+            continue
+        try:
+            archivoTexto = open(filename)
+        except IOError:
+            print('Error al abrir archivo')
+            continue
+        success = True
+    fileLines = archivoTexto.readlines()
+    tokens = []
+    for i in fileLines:
+        i = i.replace(enter, '')
+        cadena = list(i)
+        cadena.append('e')
+        done = False
+        index = 0
+        while done == False:
+            #Probar caracter por carcter hasta encontrar el token mas grande
+            i = index
+            passedAccepted = []
+            
+            currentChain = ''
+            lastAccepted = 0
+            lastToken = ''
+            empty = False
+            maybeKeyword = False
+            while (i != len(cadena)-1):
+                currentChain += cadena[i]
+                currentToken = simulateWord(graph, currentChain, keywords, tokenStates)
+                passedAccepted.append([currentToken[0], currentChain])
+                if(currentToken[0] != "NO ES ACEPTADO POR LA GRAMATICA"):
+                    lastAccepted = i
+                    lastToken = currentToken[0]
+                elif currentToken[1] == 's0':
+                    
+                    for k in keywords:
+                        if k[1].find(currentChain) != -1:
+                            maybeKeyword = True
                             break
-                    if cambio == False:
+                    if maybeKeyword == False:
+                        empty = True
                         break
-                    # Siguiente caracter
-                    i+=1
-                    c = cadena[i]
-                if (s in graph['accepting_states'] and cambio):
-                    for i in self.tokenStates:
-                        if i[0] == s:
-                            return [i[1], s]
-                else:
-                    return ["NO ES ACEPTADO POR LA GRAMATICA", s]       
+                i+=1
+                if i == len(cadena)-1 and lastToken == '':
+                    #No se acepta en el analizador
+                    tokens.append('NO SE ACEPTA')
+                    empty = True
+            if empty == False:
+                index = lastAccepted + 1
+                tokens.append(lastToken)
+                
+            else:
+                index += 1
+            if index == len(cadena)-1:
+                break
+            
+    print()
+    print('Resultado: ')
+    res = ''
+    for i in tokens:
+        res += i + ' '
+    print(res)
+    print()
 
+
+def simulateWord(graph, opc, keywords, tokenStates):
+    # Simular una palabra
+    found = False
+    for i in keywords:
+        if opc == i[1]:
+            return [i[0], 's1']
+
+    if found != True:
+        cadena = list(opc)
+        if len(cadena) == 0:
+            if 's0' in graph['accepting_states']:
+                for i in tokenStates:
+                    if i[0] == 's0':
+                        return [i[1], 's1']
+            else:
+                return ["NO ES ACEPTADO POR LA GRAMATICA", 's0']
+        else:
+            s = 's0'
+            c = cadena[0]
+            i = 0
+            cadena.append('eof')
+            while (c != 'eof'):
+                cambio = False
+                # Mover(s,c)
+                for j in graph['transitions']:
+                    if j[0] == s and j[1] == c:
+                        s = j[2]
+                        cambio = True
+                        break
+                if cambio == False:
+                    break
+                # Siguiente caracter
+                i+=1
+                c = cadena[i]
+            if (s in graph['accepting_states'] and cambio):
+                for i in tokenStates:
+                    if i[0] == s:
+                        return [i[1], s]
+            else:
+                return ["NO ES ACEPTADO POR LA GRAMATICA", s]
+
+simulateFile(graph, keywords, tokenStates)
+            ''')
+    
     def simulateA(self, graph):
         # Simular AFD
         opc = input('\nIngrese una cadena para evaluar (q para salir): ')

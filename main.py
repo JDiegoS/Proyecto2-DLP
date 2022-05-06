@@ -26,13 +26,6 @@ while success == False:
     tokens = lector.getTokens()
     keywords = lector.getKeywords()
     characters = lector.getCharacters()
-
-    '''
-    for i in characters:
-        for j in characters:
-            if i.id != j.id:
-                if j.id.find(i.id) != -1:
-                    i.id = i.id + ' '
-    '''
+    
     generador = Generador(tokens, keywords, characters)
     generador.analizeGrammar()
