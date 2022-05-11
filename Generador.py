@@ -16,7 +16,7 @@ class Generador(object):
         self.tokens = tokens
         self.keywords = keywords
         self.characters = characters
-        self.operaciones = ['(', ')', '|', '{', '}']
+        self.operaciones = ['(', ')', '|', '{', '}', '[', ']']
         self.expressions = []
         self.tokensAccepted = []
         self.tokenStates = []
@@ -29,7 +29,8 @@ class Generador(object):
         # Verificar que se cierren los parentesis y kleene
         for i in self.expressions:
             arr = list(i)
-            if arr.count('(') != arr.count(')') or arr.count('{') != arr.count('}'):
+            if arr.count('(') != arr.count(')') or arr.count('{') != arr.count('}') or arr.count('[') != arr.count(']'):
+                print('\nError. No se cerro un (, { o [\n')
                 quit()
 
         # Construir AFN

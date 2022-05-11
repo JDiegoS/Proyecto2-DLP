@@ -9,7 +9,7 @@ class AFN(object):
         self.state = 1
         self.skip = 0
         self.orAccepted = False
-        self.operaciones = ['(', ')', '|', '{', '}']
+        self.operaciones = ['(', ')', '|', '{', '}', '[', ']']
         self.lastOrOrigin = 0
         self.lastOrUnion = 0
         self.lastState = 0
@@ -52,7 +52,10 @@ class AFN(object):
         else:
             self.nodes[-1].transitions.append([str(beforeFirst), 'epsilon'])
 
-    def newKleene(self, position, accepted, inOr=False):
+    def newKleene(self, position, accepted, inOr=False, posOp=False):
+        op = '}'
+        if posOp:
+            op = ']'
         operacionP = []
         searching = True
         fOr = False
@@ -65,7 +68,7 @@ class AFN(object):
         #self.skip +=1
         while searching and position <= len(self.arr):
             
-            if self.arr[position] == '}':
+            if self.arr[position] == op:
                 endPosition = position
                 if position+1 == len(self.arr):
                     if inOr == False:
@@ -112,7 +115,10 @@ class AFN(object):
                 self.parenthesisOp(self.state, endPosition+3, False, True)
                 self.nodes.append(Node(str(self.state), [[str(orNode1), 'epsilon']], False))
             elif self.arr[endPosition+2] == '{':
-                self.newKleene(self.state, endPosition+3, False, True)
+                self.newKleene(endPosition+3, False, True)
+                self.nodes.append(Node(str(self.state), [[str(orNode1), 'epsilon']], False))
+            elif self.arr[endPosition+2] == '[':
+                self.newKleene(endPosition+3, False, True, True)
                 self.nodes.append(Node(str(self.state), [[str(orNode1), 'epsilon']], False))
             else:
                 if endPosition+3 == len(self.arr):
@@ -145,14 +151,17 @@ class AFN(object):
                 self.nodes.append(j)
 
             self.nodes.append(Node(str(self.state), [[str(self.lastState), 'epsilon']], accepted))
-            self.kleeneOp(start)
+            if posOp:
+                self.positiveOp(start)
+            else:
+                self.kleeneOp(start)
             self.lastState = self.state
             self.state += 1
     
     def positiveOp(self, first):
         for i in self.nodes:
-            if i.state == str(first) or i.state == first:
-                i.transitions.append([str(self.nodes[-2].state), 'epsilon'])
+            if i.state == str(first) or i.state == first:    
+                i.transitions.append([str(self.lastState), 'epsilon'])
         
     def parenthesisOp(self, state, position, accepted, inOr=False):
         operacionP = []
@@ -311,8 +320,6 @@ class AFN(object):
                     for j in self.nodes:
                         for j in self.nodes:
                             if str(j.state) == str(currentLastUnion+1):
-                                #print(self.state)
-                                #j.transitions.append([self.state-1 , 'epsilon'])
                                 node2a = j.accepted
                             if str(j.state) == str(self.lastState):
                                 node2a = j.accepted
@@ -329,6 +336,9 @@ class AFN(object):
             #Kleene
             elif i == '{':
                 self.newKleene(position, accepted)
+            #Positiva
+            elif i == '[':
+                self.newKleene(position, accepted, False, True)
             elif i not in self.operaciones:
                 print('Hay un error en la expresion (' + i + ')')
                 break

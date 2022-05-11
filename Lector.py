@@ -9,6 +9,7 @@ class Lector(object):
         self.lines = archivoCoco.readlines()
         
         self.reservedCoco = ['COMPILER', 'CHARACTERS', 'KEYWORDS', 'TOKENS', 'END', 'EXCEPT', 'PRODUCTIONS']
+        self.leftReserved = 'COMPILER CHARACTERS KEYWORDS TOKENS PRODUCTIONS END'
         self.compiler = ''
         self.characters = []
         self.keywords = []
@@ -20,8 +21,8 @@ class Lector(object):
 
         for i in self.lines:
             self.processLine(i.replace('\n', ''))
-        if self.reservedCount < 5:
-            print('Error al analizar palabras reservadas')
+        if self.reservedCount < 6:
+            print('\nError al analizar palabras reservadas. No se encontro ' + self.leftReserved + '\n')
             quit()
             
     def processLine(self, line):
@@ -33,29 +34,34 @@ class Lector(object):
         # Es palabra reservada de COCO
         if line[0:9] == 'COMPILER ':
             self.compiler = line.split(' ')[1]
+            self.leftReserved = self.leftReserved.replace('COMPILER ', '')
             self.reservedCount +=1
             return
         elif line[0:4] == 'END ':
             self.reservedCount +=1
+            self.leftReserved = self.leftReserved.replace('END', '')
             return
         elif line[0:10] == 'CHARACTERS':
             self.reservedCount +=1
+            self.leftReserved = self.leftReserved.replace('CHARACTERS ', '')
             self.currentType = 'CHARACTERS'
         elif line[0:9] == 'KEYWORDS':
             self.reservedCount +=1
+            self.leftReserved = self.leftReserved.replace('KEYWORDS ', '')
             self.currentType = 'KEYWORDS'
         elif line[0:8] == 'TOKENS':
             self.reservedCount +=1
             self.currentType = 'TOKENS'
-            """
-        elif line[0:12] == 'PRODUCTIONS ':
+            self.leftReserved = self.leftReserved.replace('TOKENS ', '')
+        elif line[0:12] == 'PRODUCTIONS':
             self.reservedCount +=1
+            self.leftReserved = self.leftReserved.replace('PRODUCTIONS ', '')
             self.currentType = 'PRODUCTIONS'
-            """
+            return
         else:
             # Verificar que termine con .
             if letters[-1] != '.' and letters[-1] != '=' and letters[-1] != '+':
-                print('Error al final de linea. Debe terminar en =, + o .')
+                print('\nError al final de linea. Debe terminar en =, + o .\n')
                 quit()
             # Separar linea
             if self.finishedLine == False:
@@ -94,7 +100,7 @@ class Lector(object):
                                         found = True
                                     break
                             if found == False:
-                                print('Error: el caracter %s no esta definido' % text[pos])
+                                print('\nError: el caracter %s no esta definido\n' % text[pos])
                                 quit()
                         pos += 1
                 if self.finishedLine:
